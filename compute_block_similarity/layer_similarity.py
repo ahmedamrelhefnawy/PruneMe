@@ -12,6 +12,10 @@ import datasets
 from utils import get_last_non_padded_tokens, compute_block_distances
 from typing import Optional
 
+from accelerate import init_empty_weights
+from accelerate import infer_auto_device_map
+from accelerate import load_checkpoint_and_dispatch
+
 logging.basicConfig(level=logging.INFO)
 
 # Set seed
@@ -30,8 +34,25 @@ def main(model_path: str, dataset: str, dataset_column: str, batch_size: int, ma
                                             bnb_4bit_quant_type="nf4",
                                             bnb_4bit_compute_dtype=torch.bfloat16)
     
+    with init_empty_weights():
+            model = AutoModelForCausalLM.from_pretrained(
+                                model_path,
+                                trust_remote_code= True,
+                                )
+
+    device_map = infer_auto_device_map(model_path, max_memory={0: "12GiB", "cpu": "29GiB"})
+
+    model_path = load_checkpoint_and_dispatch(
+                                        model_path,
+                                        checkpoint= model_path,
+                                        device_map= device_map,
+                                        offload_folder = "offload",
+                                        )
+
+    
+    
     model = AutoModelForCausalLM.from_pretrained(model_path,  
-                                                 device_map="auto", 
+                                                 device_map= device_map, 
                                                  quantization_config=quantization_config, 
                                                  output_hidden_states=True)
     
