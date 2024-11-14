@@ -42,6 +42,8 @@ def main(model_path: str, dataset: str, dataset_column: str, batch_size: int, ma
             model = AutoModelForCausalLM.from_pretrained(
                                 model_path,
                                 trust_remote_code= True,
+                                quantization_config=quantization_config, 
+                                output_hidden_states=True
                                 )
 
     device_map = infer_auto_device_map(model, max_memory={0: "12GiB", "cpu": "29GiB"})
