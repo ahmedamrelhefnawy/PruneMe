@@ -44,10 +44,10 @@ def main(model_path: str, dataset: str, dataset_column: str, batch_size: int, ma
                                 trust_remote_code= True,
                                 )
 
-    device_map = infer_auto_device_map(model_path, max_memory={0: "12GiB", "cpu": "29GiB"})
+    device_map = infer_auto_device_map(model, max_memory={0: "12GiB", "cpu": "29GiB"})
 
     model_path = load_checkpoint_and_dispatch(
-                                        model_path,
+                                        model,
                                         checkpoint= model_path,
                                         device_map= device_map,
                                         offload_folder = "offload",
@@ -55,12 +55,12 @@ def main(model_path: str, dataset: str, dataset_column: str, batch_size: int, ma
 
     
     
-    model = AutoModelForCausalLM.from_pretrained(model_path,  
+    model = AutoModelForCausalLM.from_pretrained(model,  
                                                  device_map= device_map, 
                                                  quantization_config=quantization_config, 
                                                  output_hidden_states=True)
     
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    tokenizer = AutoTokenizer.from_pretrained(model)
 
     if not tokenizer.pad_token:
         tokenizer.pad_token = tokenizer.eos_token
