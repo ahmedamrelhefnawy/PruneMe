@@ -16,6 +16,8 @@ from accelerate import init_empty_weights
 from accelerate import infer_auto_device_map
 from accelerate import load_checkpoint_and_dispatch
 
+from huggingface_hub import snapshot_download
+
 logging.basicConfig(level=logging.INFO)
 
 # Set seed
@@ -33,6 +35,8 @@ def main(model_path: str, dataset: str, dataset_column: str, batch_size: int, ma
                                             bnb_4bit_use_double_quant=True,
                                             bnb_4bit_quant_type="nf4",
                                             bnb_4bit_compute_dtype=torch.bfloat16)
+    
+    model_path = snapshot_download(repo_id=model_path)
     
     with init_empty_weights():
             model = AutoModelForCausalLM.from_pretrained(
